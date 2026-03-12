@@ -1,6 +1,8 @@
 import { prisma } from "../config/prisma-client.config";
 import { Blog, Prisma } from "../generated/prisma/client";
 import type { GetAllBlogParameter, UpdateBlog } from "../types/blog.types";
+import { AppError } from "../utils/AppError";
+import { handlePrismaError } from "../utils/prismaErrorHandler";
 
 export const blogService = {
   //? CREATE BLOG
@@ -9,48 +11,52 @@ export const blogService = {
     title,
     blogBody,
   }: Omit<Blog, "id" | "createdAt" | "updatedAt" | "deletedAt">) {
-    const newBlog = await prisma.blog.create({
-      data: { authorId, title, blogBody },
-    });
+    try {
+      const newBlog = await prisma.blog.create({
+        data: { authorId, title, blogBody },
+      });
 
-    return newBlog;
-  },
-
-  async updateBlog({ blogId, newData }: UpdateBlog) {
-    const updatedBlog = await prisma.blog.update({
-      where: { id: blogId },
-      data: newData,
-    });
-
-    return updatedBlog;
-  },
-
-  //? UPDATE/DELETE BLOG VALIDATION
-  async updateBlogValidation(blogId: string, authorId: string) {
-    const blogDetails = await prisma.blog.findFirst({ where: { id: blogId } });
-
-    // invalid id
-    if (!blogDetails) {
-      throw new Error("Invalid blog id");
+      return newBlog;
+    } catch (error) {
+      handlePrismaError(error);
     }
+  },
 
-    if (blogDetails.authorId !== authorId) {
-      throw new Error(
-        "Invalid credential details, only author can update the blog",
-      );
+  //? UPDATE BLOG
+  async updateBlog({ blogId, newData }: UpdateBlog) {
+    try {
+      const updatedBlog = await prisma.blog.update({
+        where: { id: blogId },
+        data: newData,
+      });
+
+      return updatedBlog;
+    } catch (error) {
+      handlePrismaError(error);
+    }
+  },
+
+  //? UPDATE/DELETE BLOG VALIDATION //FIXME
+  async updateBlogValidation(blogId: string, authorId: string) {
+    try {
+      const blogDetails = await prisma.blog.findFirst({
+        where: { id: blogId },
+      });
+    } catch (error) {
+      handlePrismaError(error);
     }
   },
 
   //? GET BLOG BY ID
   async getBlogById(blogId: string) {
-    const blogDetails = await prisma.blog.findFirst({ where: { id: blogId } });
-
-    // invalid id
-    if (!blogDetails) {
-      throw new Error("Invalid blog id");
+    try {
+      const blogDetails = await prisma.blog.findUnique({
+        where: { id: blogId },
+      });
+      return blogDetails;
+    } catch (error) {
+      handlePrismaError(error);
     }
-
-    return blogDetails;
   },
 
   //? GET ALL BLOG
@@ -92,16 +98,7 @@ export const blogService = {
         totalPage: Math.ceil(totalData / limit),
       };
     } catch (error) {
-      // 1. check apakah ini error dari prisma
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        // 2. mapping kode error prisma (P2025 == record not found)
-        if (error.code === "P2025") {
-          throw new Error("BLOG_NOT_FOUND"); // Terjemahkan ke bahasa yang kita pahami
-        }
-      }
-
-      // jika error lain yang tidak dikenal
-      throw new Error("INTERNAL_SERVER_ERROR");
+      handlePrismaError(error);
     }
   },
 };

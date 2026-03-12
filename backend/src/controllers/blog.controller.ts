@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { blogService } from "../services/blog.service";
+import { AppError } from "../utils/AppError";
 
 export const blogController = {
   //? CREATE BLOG
@@ -32,8 +33,8 @@ export const blogController = {
       success: true,
       message: "Blog updated successfully",
       data: {
-        title: newBlog.title,
-        blogBody: newBlog.blogBody,
+        title: newBlog?.title,
+        blogBody: newBlog?.blogBody,
       },
     });
   },
@@ -58,21 +59,24 @@ export const blogController = {
     const limit = Number(req.query?.limit) || 10;
     const search = req.query.search as string;
 
-    const { allBlog, totalData, currentPage, totalPage } =
-      await blogService.getAllBlog({
-        page,
-        limit,
-        search,
-      });
-    // console.log("blog", allBlog);
+    const blogData = await blogService.getAllBlog({
+      page,
+      limit,
+      search,
+    });
+
+    // if () {
+    //   throw new AppError(404, "Blogs not found");
+    // }
+
     res.status(200).json({
       success: true,
       message: "Blog data are fectched successfully",
       data: {
-        currentPage,
-        totalPage,
-        totalData,
-        allBlog,
+        currentPage: blogData?.currentPage,
+        totalPage: blogData?.totalPage,
+        totalData: blogData?.totalData,
+        allBlog: blogData?.allBlog,
       },
     });
   },
