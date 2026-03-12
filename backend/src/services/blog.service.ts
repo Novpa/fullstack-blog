@@ -1,8 +1,6 @@
-import { title } from "node:process";
 import { prisma } from "../config/prisma-client.config";
 import { Blog, Prisma } from "../generated/prisma/client";
 import type { GetAllBlogParameter, UpdateBlog } from "../types/blog.types";
-import { off } from "node:cluster";
 
 export const blogService = {
   //? CREATE BLOG
@@ -64,7 +62,6 @@ export const blogService = {
     };
 
     //Search by title / blogBody
-
     if (search) {
       where.OR = [
         { title: { contains: search, mode: "insensitive" } },
@@ -72,25 +69,39 @@ export const blogService = {
       ];
     }
 
-    const allBlog = await prisma.blog.findMany({
-      take: limit,
-      skip: offset,
-      where,
-      select: {
-        id: true,
-        author: { select: { firstName: true, lastName: true } },
-        title: true,
-        blogBody: true,
-      },
-    });
+    // TRY-CATCH
+    try {
+      const allBlog = await prisma.blog.findMany({
+        take: limit,
+        skip: offset,
+        where,
+        select: {
+          id: true,
+          author: { select: { firstName: true, lastName: true } },
+          title: true,
+          blogBody: true,
+        },
+      });
 
-    const totalData = await prisma.blog.count({ where });
+      const totalData = await prisma.blog.count({ where });
 
-    return {
-      allBlog,
-      totalData,
-      currentPage: page,
-      totalPage: Math.ceil(totalData / limit),
-    };
+      return {
+        allBlog,
+        totalData,
+        currentPage: page,
+        totalPage: Math.ceil(totalData / limit),
+      };
+    } catch (error) {
+      // 1. check apakah ini error dari prisma
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        // 2. mapping kode error prisma (P2025 == record not found)
+        if (error.code === "P2025") {
+          throw new Error("BLOG_NOT_FOUND"); // Terjemahkan ke bahasa yang kita pahami
+        }
+      }
+
+      // jika error lain yang tidak dikenal
+      throw new Error("INTERNAL_SERVER_ERROR");
+    }
   },
 };
