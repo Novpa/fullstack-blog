@@ -2,51 +2,75 @@
 import { Prisma } from "../generated/prisma/client";
 import { AppError } from "./AppError";
 
-export const handlePrismaError = (error: any) => {
-  // A. Error yang berasal dari Database (Known Request)
+/**
+ * Global Prisma Error Mapper
+ * Translates technical database exceptions into user-friendly AppErrors.
+ */
+
+export const handlePrismaError = (error: any): never => {
+  // A. Known Database Request Errors (Codes Pxxxx)
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     switch (error.code) {
-      case "P2002":
+      case "P2002": {
         const target =
-          (error.meta?.target as string[])?.join(", ") || "field tersebut";
-        throw new AppError(400, `Data sudah digunakan pada: ${target}`);
+          (error.meta?.target as string[])?.join(", ") || "this field";
+        throw new AppError(
+          400,
+          `Unique constraint failed: The ${target} is already in use.`,
+        );
+      }
 
       case "P2025":
-        throw new AppError(404, "Data tidak ditemukan di sistem.");
+        throw new AppError(
+          404,
+          "Record not found: The requested resource does not exist.",
+        );
 
       case "P2003":
         throw new AppError(
           400,
-          "Gagal memproses. Data ini masih terkait dengan data lainnya.",
+          "Foreign key constraint failed: This data is linked to other existing records.",
         );
 
       case "P2000":
-        throw new AppError(400, "Input terlalu panjang untuk kolom ini.");
+        throw new AppError(
+          400,
+          "Value too long: The provided input exceeds the column limit.",
+        );
 
       case "P2011":
-        throw new AppError(400, "Field wajib tidak boleh kosong.");
+        throw new AppError(
+          400,
+          "Constraint violation: A required field cannot be null.",
+        );
 
       default:
-        throw new AppError(500, `Database Error (${error.code})`);
+        throw new AppError(
+          500,
+          `Database Exception: Internal error code ${error.code}`,
+        );
     }
   }
 
-  // B. Error Validasi Skema (Salah tipe data/struktur)
+  // B. Schema Validation Errors (Triggered before hitting the DB)
   if (error instanceof Prisma.PrismaClientValidationError) {
-    throw new AppError(400, "Struktur data yang dikirim tidak valid.");
-  }
-
-  // C. Error Koneksi Database
-  if (error instanceof Prisma.PrismaClientInitializationError) {
     throw new AppError(
-      503,
-      "Gagal menyambung ke database. Silakan coba lagi nanti.",
+      400,
+      "Invalid data structure: Please check your input fields and types.",
     );
   }
 
-  // D. Error Tak Terduga Lainnya
+  // C. Connection & Initialization Errors
+  if (error instanceof Prisma.PrismaClientInitializationError) {
+    throw new AppError(
+      503,
+      "Database connection failed: The server is currently unable to reach the data source.",
+    );
+  }
+
+  // D. Generic Fallback
   throw new AppError(
     500,
-    error.message || "Terjadi kesalahan internal pada server.",
+    error.message || "Internal Server Error: An unexpected error occurred.",
   );
 };
