@@ -6,11 +6,11 @@ import { handlePrismaError } from "../utils/prismaErrorHandler";
 
 export const blogService = {
   //? CREATE BLOG
-  async createBlog({
+  createBlog: async ({
     authorId,
     title,
     blogBody,
-  }: Omit<Blog, "id" | "createdAt" | "updatedAt" | "deletedAt">) {
+  }: Omit<Blog, "id" | "createdAt" | "updatedAt" | "deletedAt">) => {
     try {
       const newBlog = await prisma.blog.create({
         data: { authorId, title, blogBody },
@@ -23,8 +23,17 @@ export const blogService = {
   },
 
   //? UPDATE BLOG
-  async updateBlog({ blogId, newData }: UpdateBlog) {
+  updateBlog: async ({ blogId, newData, authorId }: UpdateBlog) => {
     try {
+      const blogDetails = await prisma.blog.findFirstOrThrow({
+        where: { id: blogId },
+      });
+
+      // Simple author auth
+      if (blogDetails.authorId !== authorId) {
+        throw new AppError(403, "Unauthorized user");
+      }
+
       const updatedBlog = await prisma.blog.update({
         where: { id: blogId },
         data: newData,
@@ -37,9 +46,9 @@ export const blogService = {
   },
 
   //? UPDATE/DELETE BLOG VALIDATION //FIXME
-  async updateBlogValidation(blogId: string, authorId: string) {
+  updateBlogValidation: async (blogId: string, authorId: string) => {
     try {
-      const blogDetails = await prisma.blog.findFirst({
+      const blogDetails = await prisma.blog.findUnique({
         where: { id: blogId },
       });
     } catch (error) {
@@ -48,7 +57,7 @@ export const blogService = {
   },
 
   //? GET BLOG BY ID
-  async getBlogById(blogId: string) {
+  getBlogById: async (blogId: string) => {
     try {
       const blogDetails = await prisma.blog.findUnique({
         where: { id: blogId },
@@ -60,7 +69,7 @@ export const blogService = {
   },
 
   //? GET ALL BLOG
-  async getAllBlog({ page, limit, search }: GetAllBlogParameter) {
+  getAllBlog: async ({ page, limit, search }: GetAllBlogParameter) => {
     const offset = (page - 1) * limit;
 
     const where: Prisma.BlogWhereInput = {

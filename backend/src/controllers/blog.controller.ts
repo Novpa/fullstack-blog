@@ -1,10 +1,11 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { blogService } from "../services/blog.service";
-import { AppError } from "../utils/AppError";
+import { catchAsync } from "../utils/catchAsync";
+// import { AppError } from "../utils/AppError";
 
 export const blogController = {
   //? CREATE BLOG
-  async createBlog(req: Request, res: Response) {
+  createBlog: catchAsync(async (req: Request, res: Response) => {
     const { authorId, title, blogBody } = req.body;
 
     const newBlog = await blogService.createBlog({ authorId, title, blogBody });
@@ -17,30 +18,34 @@ export const blogController = {
         blogBody,
       },
     });
-  },
+  }),
 
   //? UPDATE BLOG
-  async updateBlog(req: Request, res: Response) {
-    const blogId = req.params.blogId as string;
-    const authorId = req.query.authorId as string;
-    const newData = req.body;
+  updateBlog: catchAsync(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const blogId = req.params.blogId as string;
+      const authorId = req.query.authorId as string;
+      const newData = req.body;
 
-    await blogService.updateBlogValidation(blogId, authorId);
+      const newBlog = await blogService.updateBlog({
+        blogId,
+        newData,
+        authorId,
+      });
 
-    const newBlog = await blogService.updateBlog({ blogId, newData });
-
-    res.status(202).json({
-      success: true,
-      message: "Blog updated successfully",
-      data: {
-        title: newBlog?.title,
-        blogBody: newBlog?.blogBody,
-      },
-    });
-  },
+      res.status(202).json({
+        success: true,
+        message: "Blog updated successfully",
+        data: {
+          title: newBlog?.title,
+          blogBody: newBlog?.blogBody,
+        },
+      });
+    },
+  ),
 
   //? GET BLOG BY ID
-  async getBlogById(req: Request, res: Response) {
+  getBlogById: catchAsync(async (req: Request, res: Response) => {
     const blogId = req.params.blogId as string;
     const blogDetails = await blogService.getBlogById(blogId);
 
@@ -51,10 +56,10 @@ export const blogController = {
         blogDetails,
       },
     });
-  },
+  }),
 
   //? GET ALL BLOG
-  async getAllBlog(req: Request, res: Response) {
+  getAllBlog: catchAsync(async (req: Request, res: Response) => {
     const page = Number(req.query?.page) || 1;
     const limit = Number(req.query?.limit) || 10;
     const search = req.query.search as string;
@@ -79,10 +84,10 @@ export const blogController = {
         allBlog: blogData?.allBlog,
       },
     });
-  },
+  }),
 
   //? DELETE BLOG (SOFT DELETE)
-  async deleteBlog(req: Request, res: Response) {
+  deleteBlog: catchAsync(async (req: Request, res: Response) => {
     const blogId = req.params.blogId as string;
     const authorId = req.query.authorId as string;
     await blogService.updateBlogValidation(blogId, authorId);
@@ -92,11 +97,11 @@ export const blogController = {
       deletedAt: currentDate,
     };
 
-    await blogService.updateBlog({ blogId, newData });
+    // await blogService.updateBlog({ blogId, newData }); //FIXME
 
     res.status(200).json({
       success: true,
       message: "Blog deleted successfully",
     });
-  },
+  }),
 };

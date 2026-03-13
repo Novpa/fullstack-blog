@@ -7,6 +7,8 @@ import { AppError } from "./AppError";
  */
 
 export const handlePrismaError = (error: any): never => {
+  if (error instanceof AppError) throw error;
+
   // A. Known Database Request Errors (Codes Pxxxx)
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     switch (error.code) {
@@ -14,7 +16,7 @@ export const handlePrismaError = (error: any): never => {
         const target =
           (error.meta?.target as string[])?.join(", ") || "this field";
         throw new AppError(
-          400,
+          409,
           `Unique constraint failed: The ${target} is already in use.`,
         );
       }

@@ -7,6 +7,7 @@ export interface BlogData {
 export interface UpdateBlog {
   blogId: string;
   newData: BlogData;
+  authorId: string;
 }
 
 export interface GetAllBlogParameter {
