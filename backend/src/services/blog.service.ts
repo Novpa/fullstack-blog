@@ -1,4 +1,5 @@
 import { prisma } from "../config/prisma-client.config";
+import { createBlogPayload } from "../dto/createBlog.dto";
 import { Blog, Prisma } from "../generated/prisma/client";
 import type { GetAllBlogParameter, UpdateBlog } from "../types/blog.types";
 import { AppError } from "../utils/AppError";
@@ -6,14 +7,15 @@ import { handlePrismaError } from "../utils/prismaErrorHandler";
 
 export const blogService = {
   //? CREATE BLOG
-  createBlog: async ({
-    authorId,
-    title,
-    blogBody,
-  }: Omit<Blog, "id" | "createdAt" | "updatedAt" | "deletedAt">) => {
+  createBlog: async (payload: createBlogPayload) => {
+    const { authorId, title, blogBody } = payload;
     try {
       const newBlog = await prisma.blog.create({
-        data: { authorId, title, blogBody },
+        data: {
+          authorId,
+          title,
+          blogBody,
+        },
       });
 
       return newBlog;
@@ -46,7 +48,7 @@ export const blogService = {
     }
   },
 
-  //? UPDATE/DELETE BLOG VALIDATION //FIXME
+  //? DELETE BLOG VALIDATION
   deleteBlog: async (blogId: string, authorId: string) => {
     const currentDate = new Date();
 
@@ -55,6 +57,7 @@ export const blogService = {
         where: { id: blogId, deletedAt: null },
       });
 
+      //simple auth (belum menggunakan jwt)
       if (blogDetails.authorId !== authorId) {
         throw new AppError(401, "Unauthorized user");
       }
@@ -85,7 +88,7 @@ export const blogService = {
   },
 
   //? GET ALL BLOG
-  getAllBlog: async ({ page, limit, search }: GetAllBlogParameter) => {
+  getAllBlogs: async ({ page, limit, search }: GetAllBlogParameter) => {
     const offset = (page - 1) * limit;
 
     const where: Prisma.BlogWhereInput = {

@@ -60,19 +60,15 @@ export const blogController = {
 
   //? GET ALL BLOG
   getAllBlog: catchAsync(async (req: Request, res: Response) => {
-    const page = Number(req.query?.page) || 1;
+    const page = Number(req.query?.page) || 1; // akan langsung ke kanan jika falsy
     const limit = Number(req.query?.limit) || 10;
     const search = req.query.search as string;
 
-    const blogData = await blogService.getAllBlog({
+    const blogData = await blogService.getAllBlogs({
       page,
       limit,
       search,
     });
-
-    // if () {
-    //   throw new AppError(404, "Blogs not found");
-    // }
 
     res.status(200).json({
       success: true,
