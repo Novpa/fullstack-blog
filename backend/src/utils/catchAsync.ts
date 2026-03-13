@@ -1,5 +1,8 @@
 import { NextFunction, Request, Response } from "express";
-// import { error } from "node:console";
+
+/* 
+ -- CONTROLLER WRAPPER
+*/
 
 export const catchAsync = (fn: Function) => {
   return (req: Request, res: Response, next: NextFunction) => {

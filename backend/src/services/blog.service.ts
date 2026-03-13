@@ -25,8 +25,9 @@ export const blogService = {
   //? UPDATE BLOG
   updateBlog: async ({ blogId, newData, authorId }: UpdateBlog) => {
     try {
+      // akan langsung throw ke catch block jika blog details tidak ada
       const blogDetails = await prisma.blog.findFirstOrThrow({
-        where: { id: blogId },
+        where: { id: blogId, deletedAt: null },
       });
 
       // Simple author auth
@@ -46,10 +47,25 @@ export const blogService = {
   },
 
   //? UPDATE/DELETE BLOG VALIDATION //FIXME
-  updateBlogValidation: async (blogId: string, authorId: string) => {
+  deleteBlog: async (blogId: string, authorId: string) => {
+    const currentDate = new Date();
+
     try {
-      const blogDetails = await prisma.blog.findUnique({
-        where: { id: blogId },
+      const blogDetails = await prisma.blog.findUniqueOrThrow({
+        where: { id: blogId, deletedAt: null },
+      });
+
+      if (blogDetails.authorId !== authorId) {
+        throw new AppError(401, "Unauthorized user");
+      }
+
+      await prisma.blog.update({
+        where: {
+          id: blogId,
+        },
+        data: {
+          deletedAt: currentDate,
+        },
       });
     } catch (error) {
       handlePrismaError(error);
@@ -60,7 +76,7 @@ export const blogService = {
   getBlogById: async (blogId: string) => {
     try {
       const blogDetails = await prisma.blog.findUnique({
-        where: { id: blogId },
+        where: { id: blogId, deletedAt: null },
       });
       return blogDetails;
     } catch (error) {

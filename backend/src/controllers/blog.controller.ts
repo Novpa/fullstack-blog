@@ -24,7 +24,7 @@ export const blogController = {
   updateBlog: catchAsync(
     async (req: Request, res: Response, next: NextFunction) => {
       const blogId = req.params.blogId as string;
-      const authorId = req.query.authorId as string;
+      const authorId = req.query.authorId as string; //FIXME - haven't used jwt
       const newData = req.body;
 
       const newBlog = await blogService.updateBlog({
@@ -89,15 +89,10 @@ export const blogController = {
   //? DELETE BLOG (SOFT DELETE)
   deleteBlog: catchAsync(async (req: Request, res: Response) => {
     const blogId = req.params.blogId as string;
-    const authorId = req.query.authorId as string;
-    await blogService.updateBlogValidation(blogId, authorId);
+    const authorId = req.query.authorId as string; //FIXME - haven't used jwt
 
-    const currentDate = new Date();
-    const newData = {
-      deletedAt: currentDate,
-    };
-
-    // await blogService.updateBlog({ blogId, newData }); //FIXME
+    console.log(blogId, authorId);
+    await blogService.deleteBlog(blogId, authorId);
 
     res.status(200).json({
       success: true,
