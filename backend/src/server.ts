@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express, { Express, NextFunction, Request, Response } from "express";
 import authRouter from "./routers/auth.router";
 import blogRouter from "./routers/blog.router";
