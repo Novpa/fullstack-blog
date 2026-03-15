@@ -1,6 +1,6 @@
 import { prisma } from "../config/prisma-client.config";
-import { createBlogPayload } from "../dto/createBlog.dto";
-import { Blog, Prisma } from "../generated/prisma/client";
+import { createBlogPayload } from "../dto/blog.dto";
+import { Prisma } from "../generated/prisma/client";
 import type { GetAllBlogParameter, UpdateBlog } from "../types/blog.types";
 import { AppError } from "../utils/AppError";
 import { handlePrismaError } from "../utils/prismaErrorHandler";

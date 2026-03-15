@@ -1,4 +1,5 @@
 import { prisma } from "../config/prisma-client.config";
+import { createUserPayload } from "../dto/auth.dto";
 import { User } from "../generated/prisma/client";
 
 export const authServices = {
@@ -7,8 +8,9 @@ export const authServices = {
     firstName,
     lastName,
     email,
+    role,
     password,
-  }: Omit<User, "id" | "createdAt" | "updatedAt" | "deletedAt">) {
+  }: createUserPayload) {
     await prisma.user.create({
       data: {
         firstName,

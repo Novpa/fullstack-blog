@@ -18,12 +18,14 @@ model User {
   firstName String    @db.VarChar(30)
   lastName  String    @db.VarChar(30)
   email     String    @unique @db.VarChar(100)
+  role      Role      @default(AUTHOR)
   password  String    @db.VarChar(30)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  blogs Blog[]
+  blogs         Blog[]
+  refreshTokens RefreshToken[]
 
   @@map("users")
 }
@@ -39,4 +41,20 @@ model Blog {
   deletedAt DateTime?
 
   @@map("blogs")
+}
+
+model RefreshToken {
+  id          String   @id @default(uuid())
+  token       String   @unique
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  expiratesAt DateTime
+  createdAt   DateTime @default(now())
+
+  @@map("refresh_tokens")
+}
+
+enum Role {
+  AUTHOR
+  READER
 }
