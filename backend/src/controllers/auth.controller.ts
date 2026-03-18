@@ -49,13 +49,12 @@ export const authController = {
 
   userLogin: catchAsync(async (req: Request, res: Response) => {
     const { email, password } = req.body;
-    const user = await authServices.userLogin({ email, password });
+    const data = await authServices.userLogin({ email, password });
     res.status(200).json({
       sucessful: true,
       message: "Login successful",
       data: {
-        firstName: user?.firstName,
-        lastName: user?.lastName,
+        data,
       },
     });
   }),

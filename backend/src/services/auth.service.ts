@@ -1,9 +1,10 @@
 import { prisma } from "../config/prisma-client.config";
 import { CreateUserPayload } from "../dto/auth.dto";
-import { Prisma } from "../generated/prisma/client";
+import { Prisma, Role } from "../generated/prisma/client";
 import { AppError } from "../utils/AppError";
 import { handlePrismaError } from "../utils/prismaErrorHandler";
 import bcrypt from "bcrypt";
+import { generateAccessToken, generateRefreshToken } from "../utils/token.util";
 
 const SALT_ROUNDS = 12;
 
@@ -99,18 +100,46 @@ export const authServices = {
   //? LOGIN
   async userLogin({ email, password }: { email: string; password: string }) {
     try {
-      const user = await prisma.user.findFirst({
+      const lowerCaseEmail = email.toLowerCase().trim();
+
+      // 1) Cari user
+      const user = await prisma.user.findUnique({
         where: {
-          email: email,
-          password: password,
+          email: lowerCaseEmail,
         },
       });
 
       if (!user) {
-        throw new Error("Invalid credentials");
+        throw new AppError(404, "Invalid credentials");
       }
 
-      return user;
+      // 2) Compare password
+      const isValidPassword = await bcrypt.compare(password, user.password);
+
+      if (!isValidPassword) {
+        throw new AppError(404, "Invalid credentials");
+      }
+
+      // 3) Jika token benar, generate access token & refresh token
+      const accessToken = generateAccessToken({
+        userId: user.id,
+        email: user.email,
+        role: user.role,
+      });
+
+      const refreshToken = await generateRefreshToken(user.id);
+
+      return {
+        accessToken,
+        refreshToken,
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role,
+        },
+      };
     } catch (error) {
       handlePrismaError(error);
     }

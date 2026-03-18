@@ -1,14 +1,15 @@
 import jwt from "jsonwebtoken";
-import { UserRole } from "../dto/auth.dto";
+// import { UserRole } from "../dto/auth.dto";
 import crypto from "crypto";
 import { prisma } from "../config/prisma-client.config";
+import { Role } from "../generated/prisma/enums";
 // import prisma from "../config/prisma-client.config";
 
 // payload type
 export interface TokenPayload {
   userId: string;
   email: string;
-  role: UserRole;
+  role: Role;
 }
 
 // generate access token function
@@ -40,7 +41,7 @@ export const verifyAccessToken = (token: string): TokenPayload => {
 // Berumur panjang (7 hari). DISIMPAN di database sehingga bisa
 // dicabut (revoke) kapan saja — ini yang membedakannya dari Access Token.
 // Bentuknya string acak, bukan JWT, karena kita tidak butuh decode payload-nya.
-export const createRefreshToken = async (userId: string): Promise<string> => {
+export const generateRefreshToken = async (userId: string): Promise<string> => {
   const token = crypto.randomBytes(64).toString("hex");
   // 64 bytes random = 128 karakter hex = sangat sulit ditebak
 

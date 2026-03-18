@@ -1,7 +1,9 @@
-export enum UserRole {
-  AUTHOR = "AUTHOR",
-  READER = "READER",
-}
+import { Role } from "../generated/prisma/enums";
+
+// export enum UserRole {
+//   AUTHOR = "AUTHOR",
+//   READER = "READER",
+// }
 
 export class CreateUserPayload {
   public readonly firstName: string;
@@ -9,13 +11,13 @@ export class CreateUserPayload {
   public readonly email: string;
   public readonly password: string;
 
-  public readonly role: UserRole;
+  public readonly role: Role;
   constructor(
     firstName: string,
     lastName: string,
     email: string,
     password: string,
-    role: UserRole,
+    role: Role,
   ) {
     this.firstName = firstName;
     this.lastName = lastName;
