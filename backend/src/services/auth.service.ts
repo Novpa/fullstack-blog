@@ -9,6 +9,7 @@ import {
   generateRefreshToken,
   rotateRefreshToken,
 } from "../utils/token.util";
+import { error } from "node:console";
 
 const SALT_ROUNDS = 12;
 
@@ -172,7 +173,7 @@ export const authServices = {
       await prisma.refreshToken.delete({
         where: { token: oldRefreshToken },
       });
-      throw new AppError(408, "Refresh token expired");
+      throw new Error("REFRESH_TOKEN_EXPIRED");
     }
 
     // 4) jika token valid maka lakukan rotasi

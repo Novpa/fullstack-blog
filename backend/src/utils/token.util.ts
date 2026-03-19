@@ -80,6 +80,6 @@ export const rotateRefreshToken = async (
 };
 
 //Digunakan saat logout atau saat mendeteksi pencurian token
-export const revokeTokem = async (userId: string): Promise<void> => {
+export const revokeToken = async (userId: string): Promise<void> => {
   await prisma.refreshToken.deleteMany({ where: { userId } });
 };
