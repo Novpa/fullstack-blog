@@ -3,7 +3,6 @@ import express, { Express, NextFunction, Request, Response } from "express";
 import authRouter from "./routers/auth.router";
 import blogRouter from "./routers/blog.router";
 import { globalErrorHandler } from "./middlewares/errorMiddleware";
-import blogAuthRouter from "./routers/blogAuth.router";
 import cookieParser from "cookie-parser";
 
 const app: Express = express();
@@ -16,11 +15,8 @@ app.use(express.json());
 // cookie-parser middleware
 app.use(cookieParser());
 
-app.use("/api/user", authRouter);
+app.use("/api/auth", authRouter);
 app.use("/api/blog", blogRouter);
-
-// protected routes
-app.use("/api/auth", blogAuthRouter);
 
 // error middleware
 app.use(globalErrorHandler);

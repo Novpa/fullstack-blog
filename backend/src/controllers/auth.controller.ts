@@ -10,7 +10,7 @@ const REFRESH_COOKIE_OPTIONS = {
   secure: process.env.NODE_ENV === "production", // Hanya HTTPS di production
   sameSite: "strict" as const, // Blokir cross-site request (anti-CSRF)
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 hari dalam milidetik
-  path: "/auth", // Cookie hanya dikirim ke path /auth — lebih aman
+  path: "/api/auth", // Cookie hanya dikirim ke path /api/auth — lebih aman
 };
 
 export const authController = {
@@ -94,7 +94,7 @@ export const authController = {
       const { newAccessToken, newRefreshToken } =
         await authServices.refreshToken(oldRefreshToken);
 
-      // store token in the cookie
+      // store new token in the cookie
       res.cookie("refreshToken", newRefreshToken, REFRESH_COOKIE_OPTIONS);
 
       return res.status(200).json({
