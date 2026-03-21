@@ -1,7 +1,16 @@
 import axios from "axios";
-import type { Login } from "../types/loginTypes";
+import type { LoginType } from "../types/loginTypes";
+import type { User } from "../types/userTypes";
 
-export const handleSubmitLogin = async ({ email, password }: Login) => {
+interface LoginResponse {
+  accessToken: string;
+  user: User;
+}
+
+export const handleSubmitLogin = async ({
+  email,
+  password,
+}: LoginType): Promise<LoginResponse> => {
   try {
     const response = await axios.post(
       "http://localhost:8000/api/auth/login",
@@ -16,8 +25,12 @@ export const handleSubmitLogin = async ({ email, password }: Login) => {
         withCredentials: true,
       },
     );
-    console.log(response);
+    const data: LoginResponse = response.data.data;
+    // console.log("data", data);
+
+    return data;
   } catch (error) {
     console.log(error);
+    throw new Error("There is something wrong during fetching the API");
   }
 };

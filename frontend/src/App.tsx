@@ -3,8 +3,9 @@ import AppLayout from "./pages/AppLayout";
 import BlogList from "./pages/blog/BlogList";
 import CreateBlog from "./pages/blog/CreateBlog";
 import Signup from "./pages/auth/Signup";
-import Login from "./pages/auth/Login";
 import ErrorBoundary from "./pages/ErrorBoundary";
+import AuthorManagement from "./pages/blog/AuthorManagement";
+import Login from "./pages/auth/Login";
 
 function App() {
   const router = createBrowserRouter([
@@ -14,7 +15,7 @@ function App() {
       ErrorBoundary: ErrorBoundary,
       children: [
         {
-          index: true,
+          path: "blog",
           Component: BlogList,
         },
         {
@@ -28,6 +29,10 @@ function App() {
         {
           path: "signup",
           Component: Signup,
+        },
+        {
+          path: "author/management",
+          Component: AuthorManagement,
         },
       ],
     },

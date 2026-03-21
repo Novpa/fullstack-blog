@@ -1,7 +1,7 @@
 function BlogList() {
   return (
     <div>
-      <h1>blog list</h1>
+      <h1>Blog list</h1>
     </div>
   );
 }

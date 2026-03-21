@@ -2,10 +2,13 @@ import { MdAlternateEmail } from "react-icons/md";
 import { RiLockPasswordLine } from "react-icons/ri";
 import { useFormik } from "formik";
 import { loginSchema } from "../../lib/schemas/loginSchema";
-import type { Login } from "../../types/loginTypes";
+import type { LoginType } from "../../types/loginTypes";
 import { handleSubmitLogin } from "../../services/authService";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
+  const navigate = useNavigate();
+
   const formik = useFormik({
     initialValues: {
       email: "",
@@ -14,8 +17,15 @@ function Login() {
 
     validationSchema: loginSchema,
 
-    onSubmit: (values: Login) => {
-      handleSubmitLogin(values);
+    onSubmit: async (values: LoginType) => {
+      const userData = await handleSubmitLogin(values);
+      console.log("userData", userData);
+
+      if (userData.user.role === "AUTHOR") {
+        navigate("/author/management");
+      } else {
+        navigate("/blog");
+      }
     },
   });
 
