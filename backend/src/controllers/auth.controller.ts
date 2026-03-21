@@ -7,7 +7,8 @@ import { revokeToken } from "../utils/token.util";
 // Konfigurasi cookie yang sama dipakai di beberapa tempat — definisikan sekali
 const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true, // Tidak bisa diakses document.cookie di browser
-  secure: process.env.NODE_ENV === "production", // Hanya HTTPS di production
+  // secure: process.env.NODE_ENV === "production", // Hanya HTTPS di production
+  secure: false, // Hanya HTTPS di production
   sameSite: "strict" as const, // Blokir cross-site request (anti-CSRF)
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 hari dalam milidetik
   path: "/api/auth", // Cookie hanya dikirim ke path /api/auth — lebih aman

@@ -17,7 +17,14 @@ app.use(express.json());
 app.use(cookieParser());
 
 //cors middleware
-// app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173", // Sesuaikan dengan URL Frontend kamu
+    credentials: true, // WAJIB TRUE agar cookie bisa lewat
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Izinkan OPTIONS
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
 
 app.use("/api/auth", authRouter);
 app.use("/api/blog", blogRouter);
