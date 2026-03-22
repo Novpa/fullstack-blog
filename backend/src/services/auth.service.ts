@@ -189,6 +189,12 @@ export const authServices = {
       role: storedToken.user.role,
     });
 
-    return { newRefreshToken, newAccessToken };
+    const user = {
+      userId: storedToken.user.id,
+      email: storedToken.user.email,
+      role: storedToken.user.role,
+    };
+
+    return { newRefreshToken, newAccessToken, user };
   },
 };

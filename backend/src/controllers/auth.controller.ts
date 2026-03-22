@@ -92,7 +92,7 @@ export const authController = {
       }
 
       // create new accessToken & new refreshToken
-      const { newAccessToken, newRefreshToken } =
+      const { newRefreshToken, newAccessToken, user } =
         await authServices.refreshToken(oldRefreshToken);
 
       // store new token in the cookie
@@ -100,7 +100,7 @@ export const authController = {
 
       return res.status(200).json({
         success: true,
-        data: { accessToken: newAccessToken },
+        data: { accessToken: newAccessToken, user },
       });
     } catch (error: any) {
       // hapus cookie yang invalid

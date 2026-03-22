@@ -5,9 +5,11 @@ import { loginSchema } from "../../lib/schemas/loginSchema";
 import type { LoginType } from "../../types/loginTypes";
 import { handleSubmitLogin } from "../../services/authService";
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../../store/useAuthStore";
 
 function Login() {
   const navigate = useNavigate();
+  const userLogin = useAuthStore((state) => state.login);
 
   const formik = useFormik({
     initialValues: {
@@ -19,9 +21,11 @@ function Login() {
 
     onSubmit: async (values: LoginType) => {
       const userData = await handleSubmitLogin(values);
-      console.log("userData", userData);
+      const user = userData.user;
 
-      if (userData.user.role === "AUTHOR") {
+      userLogin(user.id, user.email, user.role, userData.accessToken);
+
+      if (user.role === "AUTHOR") {
         navigate("/author/management");
       } else {
         navigate("/blog");
