@@ -2,8 +2,6 @@ import { Request, Response } from "express";
 import { authServices } from "../services/auth.service";
 import { catchAsync } from "../utils/catchAsync";
 import { revokeToken } from "../utils/token.util";
-import { ref } from "node:process";
-// import { env } from "../../";
 
 // Konfigurasi cookie yang sama dipakai di beberapa tempat — definisikan sekali
 const REFRESH_COOKIE_OPTIONS = {
