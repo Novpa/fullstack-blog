@@ -2,6 +2,7 @@ import { prisma } from "../config/prisma-client.config";
 import { CreateUserPayload } from "../dto/auth.dto";
 import { Prisma, Role } from "../generated/prisma/client";
 import { AppError } from "../utils/AppError";
+import { formatUserResponse } from "../utils/formatUserResponse";
 import { handlePrismaError } from "../utils/prismaErrorHandler";
 import bcrypt from "bcrypt";
 // import {
@@ -17,7 +18,7 @@ export const registerUser = async (data: any) => {
   try {
     const hashedPassword = await bcrypt.hash(data.password, SALT_ROUNDS);
 
-    return await prisma.user.create({
+    const user = await prisma.user.create({
       data: {
         firstName: data.firstName,
         lastName: data.lastName,
@@ -26,6 +27,8 @@ export const registerUser = async (data: any) => {
         password: hashedPassword,
       },
     });
+
+    return formatUserResponse(user);
   } catch (error) {
     handlePrismaError(error);
   }
@@ -50,7 +53,7 @@ export const validateUser = async (rawEmail: string, password: string) => {
     throw new AppError(401, "Invalid credentials");
   }
 
-  return user; //FIXME --> need select?
+  return formatUserResponse(user); //FIXME --> need select?
 };
 
 // ------ DIVIDER ------

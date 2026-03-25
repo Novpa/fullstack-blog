@@ -12,7 +12,7 @@ export const signup = catchAsync(async (req: Request, res: Response) => {
   res.status(201).json({
     status: "success",
     message: "User is successfully created",
-    data: { userId: user?.id, email: user?.email },
+    data: user,
   });
 });
 
@@ -49,11 +49,7 @@ export const login = catchAsync(async (req: Request, res: Response) => {
     status: "success",
     data: {
       accessToken,
-      user: {
-        id: user.id,
-        fullName: payload.fullName,
-        role: user.role,
-      },
+      user,
     },
   });
 });
