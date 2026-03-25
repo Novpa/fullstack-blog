@@ -33,8 +33,8 @@ model User {
 
 model Blog {
   id        String    @id @default(uuid())
-  authorId  String
-  author    User      @relation(fields: [authorId], references: [id])
+  userId  String
+  author    User      @relation(fields: [userId], references: [id])
   title     String    @db.VarChar(75)
   blogBody  String    @db.Text
   createdAt DateTime  @default(now())
@@ -46,10 +46,10 @@ model Blog {
 
 model RefreshToken {
   id          String   @id @default(uuid())
-  token       String   @unique
+  token       String   @unique @db.Text
   userId      String
   user        User     @relation(fields: [userId], references: [id])
-  expiratesAt DateTime
+  expiresAt DateTime
   createdAt   DateTime @default(now())
 
   @@map("refresh_tokens")
