@@ -1,9 +1,18 @@
 import { Request, Response } from "express";
 import { catchAsync } from "../utils/catchAsync";
-import { registerUser, validateUser } from "../services/auth.service";
-import { generateAccessToken, generateRefreshToken } from "../utils/token.util";
+import {
+  registerUser,
+  rotateToken,
+  validateUser,
+} from "../services/auth.service";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  verifyRefreshToken,
+} from "../utils/token.util";
 import { prisma } from "../config/prisma-client.config";
 import { REFRESH_COOKIE_OPTIONS } from "../config/cookie.config";
+import { AppError } from "../utils/AppError";
 
 //? signup
 export const signup = catchAsync(async (req: Request, res: Response) => {
@@ -51,6 +60,51 @@ export const login = catchAsync(async (req: Request, res: Response) => {
       accessToken,
       user,
     },
+  });
+});
+
+//? refresh
+export const refresh = catchAsync(async (req: Request, res: Response) => {
+  const oldRefreshToken = req.cookies.refreshToken;
+
+  if (!oldRefreshToken) {
+    throw new AppError(401, "Sesi berakhir, silakan login kembali.");
+  }
+
+  // 1) verification JWT token (expires & secret)
+  const decoded = verifyRefreshToken(oldRefreshToken);
+
+  // 2) search in database, if it's still active
+  const storedToken = await prisma.refreshToken.findUnique({
+    where: { token: oldRefreshToken },
+    include: { user: true },
+  });
+
+  // 3) if jwt is valid but is not stored in the DB
+  if (!storedToken) {
+    // delete all refresh token token that is belong to user in the DB (Security Breach)
+    await prisma.refreshToken.deleteMany({ where: { userId: decoded.userId } });
+    res.clearCookie("refreshToken", REFRESH_COOKIE_OPTIONS);
+    throw new AppError(401, "Suspicious activities are detected");
+  }
+
+  // 4) prepare new payload
+  const payload = {
+    userId: storedToken.user.id,
+    role: storedToken.user.role,
+    fullName: `${storedToken.user.firstName} ${storedToken.user.lastName}`,
+  };
+
+  // 5) do rotations in the service
+  const newAccessToken = generateAccessToken(payload);
+  const rotateSession = await rotateToken(oldRefreshToken, payload);
+
+  // 6) send to the client
+  res.cookie("refreshToken", rotateSession.token, REFRESH_COOKIE_OPTIONS);
+
+  res.status(200).json({
+    status: "success",
+    data: { accessToken: newAccessToken },
   });
 });
 

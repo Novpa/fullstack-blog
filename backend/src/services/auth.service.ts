@@ -5,6 +5,7 @@ import { AppError } from "../utils/AppError";
 import { formatUserResponse } from "../utils/formatUserResponse";
 import { handlePrismaError } from "../utils/prismaErrorHandler";
 import bcrypt from "bcrypt";
+import { generateRefreshToken, TokenPayload } from "../utils/token.util";
 // import {
 //   generateAccessToken,
 //   generateRefreshToken,
@@ -35,7 +36,6 @@ export const registerUser = async (data: any) => {
 };
 
 //? validate user
-
 export const validateUser = async (rawEmail: string, password: string) => {
   const email = rawEmail.toLowerCase().trim();
 
@@ -53,7 +53,30 @@ export const validateUser = async (rawEmail: string, password: string) => {
     throw new AppError(401, "Invalid credentials");
   }
 
-  return formatUserResponse(user); //FIXME --> need select?
+  return formatUserResponse(user);
+};
+
+//? rotate token
+export const rotateToken = async (
+  oldRefreshToken: string,
+  payload: TokenPayload,
+) => {
+  // 1) create token baru
+  const newToken = generateRefreshToken(payload);
+
+  return await prisma.$transaction(async (tx) => {
+    // 2) hapus yang lama
+    await tx.refreshToken.delete({ where: { token: oldRefreshToken } });
+
+    // 3) simpan yang lama
+    return await tx.refreshToken.create({
+      data: {
+        token: newToken,
+        userId: payload.userId,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      },
+    });
+  });
 };
 
 // ------ DIVIDER ------
