@@ -1,7 +1,7 @@
 import "dotenv/config";
 import express, { Express, NextFunction, Request, Response } from "express";
 import authRouter from "./routers/auth.router";
-// import blogRouter from "./routers/blog.router";
+import blogRouter from "./routers/blog.router";
 import { globalErrorHandler } from "./middlewares/errorMiddleware";
 import cookieParser from "cookie-parser";
 import cors from "cors";
@@ -28,6 +28,7 @@ app.use(cookieParser());
 
 // endpoint
 app.use("/api/auth", authRouter);
+app.use("/api/blog", blogRouter);
 
 // error middleware
 app.use(globalErrorHandler);

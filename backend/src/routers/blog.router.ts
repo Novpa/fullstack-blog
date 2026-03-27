@@ -4,15 +4,20 @@ import { authentication, authorization } from "../middlewares/auth.middleware";
 
 const router = Router();
 
-router.post(
-  "/new",
+router.get(
+  "/",
   authentication,
   authorization("AUTHOR"),
-  blogController.createBlog,
+  blogController.getAllBlog,
 );
-router.patch("/:blogId", blogController.updateBlog);
-router.get("/:blogId", blogController.getBlogById);
-router.get("/", blogController.getAllBlog);
-router.delete("/delete/:blogId", blogController.deleteBlog);
+// router.post(
+//   "/",
+//   authentication,
+//   authorization("AUTHOR"),
+//   blogController.createBlog,
+// );
+// router.get("/:blogId", blogController.getBlogById);
+// router.patch("/:blogId", blogController.updateBlog);
+// router.delete("/delete/:blogId", blogController.deleteBlog);
 
 export default router;

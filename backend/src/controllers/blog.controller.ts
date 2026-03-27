@@ -5,71 +5,73 @@ import { catchAsync } from "../utils/catchAsync";
 
 export const blogController = {
   //? CREATE BLOG
-  createBlog: catchAsync(async (req: Request, res: Response) => {
-    const { title, blogBody } = req.body;
+  // createBlog: catchAsync(async (req: Request, res: Response) => {
+  //   const { title, blogBody } = req.body;
 
-    const user = req.user;
-    // console.log("user", user);
+  //   const user = req.user;
+  //   // console.log("user", user);
 
-    const newBlog = await blogService.createBlog({
-      authorId: user!.userId,
-      title,
-      blogBody,
-    });
-    console.log("newBlog", newBlog);
-    res.status(200).json({
-      success: true,
-      message: "Blog created successfully",
-      data: {
-        title,
-        blogBody,
-      },
-    });
-  }),
+  //   const newBlog = await blogService.createBlog({
+  //     authorId: user!.userId,
+  //     title,
+  //     blogBody,
+  //   });
+  //   console.log("newBlog", newBlog);
+  //   res.status(200).json({
+  //     success: true,
+  //     message: "Blog created successfully",
+  //     data: {
+  //       title,
+  //       blogBody,
+  //     },
+  //   });
+  // }),
 
-  //? UPDATE BLOG
-  updateBlog: catchAsync(
-    async (req: Request, res: Response, next: NextFunction) => {
-      const blogId = req.params.blogId as string;
-      const authorId = req.query.authorId as string; //FIXME - haven't used jwt
-      const newData = req.body;
+  // //? UPDATE BLOG
+  // updateBlog: catchAsync(
+  //   async (req: Request, res: Response, next: NextFunction) => {
+  //     const blogId = req.params.blogId as string;
+  //     const authorId = req.query.authorId as string; //FIXME - haven't used jwt
+  //     const newData = req.body;
 
-      const newBlog = await blogService.updateBlog({
-        blogId,
-        newData,
-        authorId,
-      });
+  //     const newBlog = await blogService.updateBlog({
+  //       blogId,
+  //       newData,
+  //       authorId,
+  //     });
 
-      res.status(202).json({
-        success: true,
-        message: "Blog updated successfully",
-        data: {
-          title: newBlog?.title,
-          blogBody: newBlog?.blogBody,
-        },
-      });
-    },
-  ),
+  //     res.status(202).json({
+  //       success: true,
+  //       message: "Blog updated successfully",
+  //       data: {
+  //         title: newBlog?.title,
+  //         blogBody: newBlog?.blogBody,
+  //       },
+  //     });
+  //   },
+  // ),
 
-  //? GET BLOG BY ID
-  getBlogById: catchAsync(async (req: Request, res: Response) => {
-    const blogId = req.params.blogId as string;
-    const blogDetails = await blogService.getBlogById(blogId);
+  // //? GET BLOG BY ID
+  // getBlogById: catchAsync(async (req: Request, res: Response) => {
+  //   const blogId = req.params.blogId as string;
+  //   const blogDetails = await blogService.getBlogById(blogId);
 
-    res.status(200).json({
-      success: true,
-      message: "Fectch blog details successful",
-      data: {
-        blogDetails,
-      },
-    });
-  }),
+  //   res.status(200).json({
+  //     success: true,
+  //     message: "Fectch blog details successful",
+  //     data: {
+  //       blogDetails,
+  //     },
+  //   });
+  // }),
 
   //? GET ALL BLOG
   getAllBlog: catchAsync(async (req: Request, res: Response) => {
     const page = Number(req.query?.page) || 1; // akan langsung ke kanan jika falsy
     const limit = Number(req.query?.limit) || 10;
     const search = req.query.search as string;
+
+    // console.log("testing user data from req:", req.user);
 
     const blogData = await blogService.getAllBlogs({
       page,
@@ -90,16 +92,16 @@ export const blogController = {
   }),
 
   //? DELETE BLOG (SOFT DELETE)
-  deleteBlog: catchAsync(async (req: Request, res: Response) => {
-    const blogId = req.params.blogId as string;
-    const authorId = req.query.authorId as string; //FIXME - haven't used jwt
+  // deleteBlog: catchAsync(async (req: Request, res: Response) => {
+  //   const blogId = req.params.blogId as string;
+  //   const authorId = req.query.authorId as string; //FIXME - haven't used jwt
 
-    console.log(blogId, authorId);
-    await blogService.deleteBlog(blogId, authorId);
+  //   console.log(blogId, authorId);
+  //   await blogService.deleteBlog(blogId, authorId);
 
-    res.status(200).json({
-      success: true,
-      message: "Blog deleted successfully",
-    });
-  }),
+  //   res.status(200).json({
+  //     success: true,
+  //     message: "Blog deleted successfully",
+  //   });
+  // }),
 };
