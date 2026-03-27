@@ -61,14 +61,14 @@ export const rotateToken = async (
   oldRefreshToken: string,
   payload: TokenPayload,
 ) => {
-  // 1) create token baru
+  // 1) create new token
   const newToken = generateRefreshToken(payload);
 
   return await prisma.$transaction(async (tx) => {
-    // 2) hapus yang lama
+    // 2) delete old token
     await tx.refreshToken.delete({ where: { token: oldRefreshToken } });
 
-    // 3) simpan yang lama
+    // 3) create / save the new token
     return await tx.refreshToken.create({
       data: {
         token: newToken,

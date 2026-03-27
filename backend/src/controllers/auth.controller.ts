@@ -65,6 +65,7 @@ export const login = catchAsync(async (req: Request, res: Response) => {
 
 //? refresh
 export const refresh = catchAsync(async (req: Request, res: Response) => {
+  // take the token from cookie
   const oldRefreshToken = req.cookies.refreshToken;
 
   if (!oldRefreshToken) {
