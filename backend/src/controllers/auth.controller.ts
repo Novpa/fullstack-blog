@@ -13,6 +13,7 @@ import {
 import { prisma } from "../config/prisma-client.config";
 import { REFRESH_COOKIE_OPTIONS } from "../config/cookie.config";
 import { AppError } from "../utils/AppError";
+import { logoutUser } from "../services/auth.service";
 
 //? signup
 export const signup = catchAsync(async (req: Request, res: Response) => {
@@ -83,9 +84,9 @@ export const refresh = catchAsync(async (req: Request, res: Response) => {
 
   // 3) if jwt is valid but is not stored in the DB
   // this means there's somebody try to use old token that has been deleted from the database
+
   if (!storedToken) {
     // delete all refresh token token that is belong to user in the DB (Security Breach)
-
     await prisma.refreshToken.deleteMany({ where: { userId: decoded.userId } });
     res.clearCookie("refreshToken", REFRESH_COOKIE_OPTIONS);
     throw new AppError(401, "Suspicious activities are detected");
@@ -100,7 +101,7 @@ export const refresh = catchAsync(async (req: Request, res: Response) => {
 
   // 5) do rotations in the service
   const newAccessToken = generateAccessToken(payload);
-  const rotateSession = await rotateToken(oldRefreshToken, payload);
+  const rotateSession = await rotateToken(oldRefreshToken, payload); // note --> rotateToken fnc will generate new refresh token and generate old token in database
 
   // 6) send to the client
   res.cookie("refreshToken", rotateSession.token, REFRESH_COOKIE_OPTIONS);
@@ -108,6 +109,23 @@ export const refresh = catchAsync(async (req: Request, res: Response) => {
   res.status(200).json({
     status: "success",
     data: { accessToken: newAccessToken },
+  });
+});
+
+export const logout = catchAsync(async (req: Request, res: Response) => {
+  const storedToken = req.cookies.refreshToken;
+
+  // delete token from database
+  if (storedToken) {
+    await logoutUser(storedToken);
+  }
+
+  // delete token from the browser
+  res.clearCookie("refreshToken", { ...REFRESH_COOKIE_OPTIONS, maxAge: 0 });
+
+  res.status(200).json({
+    status: "success",
+    message: "Logout successful",
   });
 });
 

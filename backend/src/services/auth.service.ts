@@ -79,6 +79,13 @@ export const rotateToken = async (
   });
 };
 
+export const logoutUser = async (token: string) => {
+  // Delete token from DB
+  // using deleteMany will not throw any errors if the token is not found in the DB
+
+  return prisma.refreshToken.deleteMany({ where: { token } });
+};
+
 // ------ DIVIDER ------
 
 // export const authServices = {

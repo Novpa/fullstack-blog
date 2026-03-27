@@ -1,11 +1,13 @@
 import { Request, Response, Router } from "express";
 import { authentication, authorization } from "../middlewares/auth.middleware";
-import { login, signup } from "../controllers/auth.controller";
+import { login, logout, refresh, signup } from "../controllers/auth.controller";
 
 const router = Router();
 
 router.post("/signup", signup);
 router.post("/login", login);
+router.post("/logout", logout);
+router.get("/refresh", refresh);
 
 // router.get("/", authController.getAllUser);
 // router.post("/signup", authController.userRegister);
