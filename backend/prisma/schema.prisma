@@ -11,7 +11,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-
 }
 
 model User {
@@ -20,7 +19,7 @@ model User {
   lastName  String    @db.VarChar(30)
   email     String    @unique @db.VarChar(100)
   role      Role      @default(AUTHOR)
-  password  String    
+  password  String
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
@@ -33,10 +32,12 @@ model User {
 
 model Blog {
   id        String    @id @default(uuid())
-  userId  String
-  author    User      @relation(fields: [userId], references: [id])
+  authorId  String
+  author    User      @relation(fields: [authorId], references: [id])
   title     String    @db.VarChar(75)
-  blogBody  String    @db.Text
+  slug      String    @unique
+  content   String    @db.Text
+  thumbnail String?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
@@ -45,12 +46,12 @@ model Blog {
 }
 
 model RefreshToken {
-  id          String   @id @default(uuid())
-  token       String   @unique @db.Text
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
+  id        String   @id @default(uuid())
+  token     String   @unique @db.Text
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
   expiresAt DateTime
-  createdAt   DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@map("refresh_tokens")
 }

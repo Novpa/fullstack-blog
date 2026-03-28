@@ -1,10 +1,10 @@
 export class createBlogPayload {
-  public readonly authorId: string;
   public readonly title: string;
-  public readonly blogBody: string;
-  constructor(authorId: string, title: string, blogBody: string) {
-    this.authorId = authorId;
+  public readonly content: string;
+  public readonly thumbnail: string;
+  constructor(title: string, blogBody: string, thumbnail: string) {
     this.title = title;
-    this.blogBody = blogBody;
+    this.content = blogBody;
+    this.thumbnail = thumbnail;
   }
 }

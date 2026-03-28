@@ -6,84 +6,78 @@ import { formatUserResponse } from "../utils/formatUserResponse";
 import { handlePrismaError } from "../utils/prismaErrorHandler";
 import bcrypt from "bcrypt";
 import { generateRefreshToken, TokenPayload } from "../utils/token.util";
-// import {
-//   generateAccessToken,
-//   generateRefreshToken,
-//   rotateRefreshToken,
-// } from "../utils/token.util";
 
 const SALT_ROUNDS = 10;
 
-//NEWLY SERVICE --> OUTSIDE OF authService OBJ
-export const registerUser = async (data: any) => {
-  try {
-    const hashedPassword = await bcrypt.hash(data.password, SALT_ROUNDS);
+export const userService = {
+  //? create user
+  registerUser: async (data: any) => {
+    try {
+      const hashedPassword = await bcrypt.hash(data.password, SALT_ROUNDS);
 
-    const user = await prisma.user.create({
-      data: {
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
-        role: data.role,
-        password: hashedPassword,
-      },
+      const user = await prisma.user.create({
+        data: {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          role: data.role,
+          password: hashedPassword,
+        },
+      });
+      return formatUserResponse(user);
+    } catch (error) {
+      handlePrismaError(error);
+    }
+  },
+
+  //? validate user
+  validateUser: async (rawEmail: string, password: string) => {
+    const email = rawEmail.toLowerCase().trim();
+
+    const user = await prisma.user.findUnique({
+      where: { email, deletedAt: null },
     });
+
+    if (!user) {
+      throw new AppError(401, "Invalid credentials");
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      throw new AppError(401, "Invalid credentials");
+    }
 
     return formatUserResponse(user);
-  } catch (error) {
-    handlePrismaError(error);
-  }
-};
+  },
 
-//? validate user
-export const validateUser = async (rawEmail: string, password: string) => {
-  const email = rawEmail.toLowerCase().trim();
+  //? rotate token
+  rotateToken: async (oldRefreshToken: string, payload: TokenPayload) => {
+    // 1) create new token
+    const newToken = generateRefreshToken(payload);
 
-  const user = await prisma.user.findUnique({
-    where: { email, deletedAt: null },
-  });
+    return await prisma.$transaction(async (tx) => {
+      // 2) delete old token
+      await tx.refreshToken.delete({ where: { token: oldRefreshToken } });
 
-  if (!user) {
-    throw new AppError(401, "Invalid credentials");
-  }
-
-  const isMatch = await bcrypt.compare(password, user.password);
-
-  if (!isMatch) {
-    throw new AppError(401, "Invalid credentials");
-  }
-
-  return formatUserResponse(user);
-};
-
-//? rotate token
-export const rotateToken = async (
-  oldRefreshToken: string,
-  payload: TokenPayload,
-) => {
-  // 1) create new token
-  const newToken = generateRefreshToken(payload);
-
-  return await prisma.$transaction(async (tx) => {
-    // 2) delete old token
-    await tx.refreshToken.delete({ where: { token: oldRefreshToken } });
-
-    // 3) create / save the new token
-    return await tx.refreshToken.create({
-      data: {
-        token: newToken,
-        userId: payload.userId,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      },
+      // 3) create / save the new token
+      return await tx.refreshToken.create({
+        data: {
+          token: newToken,
+          userId: payload.userId,
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        },
+      });
     });
-  });
-};
+  },
 
-export const logoutUser = async (token: string) => {
-  // Delete token from DB
-  // using deleteMany will not throw any errors if the token is not found in the DB
+  //? Logout
+  logoutUser: async (token: string) => {
+    // Delete token from DB
+    // using deleteMany will not throw any errors if the token is not found in the DB
 
-  return prisma.refreshToken.deleteMany({ where: { token } });
+    return prisma.refreshToken.deleteMany({ where: { token } });
+  },
 };
 
 // ------ DIVIDER ------

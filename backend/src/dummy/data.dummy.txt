@@ -1,0 +1,26 @@
+[
+  {
+    "title": "Getting Started with TypeScript",
+    "slug": "getting-started-with-typescript",
+    "content": "TypeScript is a superset of JavaScript that adds static typing. It helps developers build scalable and maintainable applications.",
+    "thumbnail": "https://example.com/images/typescript.jpg"
+  },
+  {
+    "title": "Introduction to REST APIs",
+    "slug": "introduction-to-rest-apis",
+    "content": "REST APIs allow communication between systems using standard HTTP methods such as GET, POST, PUT, and DELETE.",
+    "thumbnail": "https://example.com/images/rest-api.jpg"
+  },
+  {
+    "title": "Clean Code Best Practices",
+    "slug": "clean-code-best-practices",
+    "content": "Writing clean code improves readability and maintainability. Use meaningful naming, consistent structure, and avoid unnecessary complexity.",
+    "thumbnail": null
+  },
+  {
+    "title": "Understanding Relational Databases",
+    "slug": "understanding-relational-databases",
+    "content": "Relational databases store data in tables with relationships between them. Examples include MySQL and PostgreSQL.",
+    "thumbnail": "https://example.com/images/database.jpg"
+  }
+]

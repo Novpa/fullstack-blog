@@ -1,11 +1,6 @@
 import { Request, Response } from "express";
 import { catchAsync } from "../utils/catchAsync";
 import {
-  registerUser,
-  rotateToken,
-  validateUser,
-} from "../services/auth.service";
-import {
   generateAccessToken,
   generateRefreshToken,
   verifyRefreshToken,
@@ -13,11 +8,11 @@ import {
 import { prisma } from "../config/prisma-client.config";
 import { REFRESH_COOKIE_OPTIONS } from "../config/cookie.config";
 import { AppError } from "../utils/AppError";
-import { logoutUser } from "../services/auth.service";
+import { userService } from "../services/auth.service";
 
 //? signup
 export const signup = catchAsync(async (req: Request, res: Response) => {
-  const user = await registerUser(req.body);
+  const user = await userService.registerUser(req.body);
 
   res.status(201).json({
     status: "success",
@@ -31,7 +26,7 @@ export const login = catchAsync(async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   // 1) validate user
-  const user = await validateUser(email, password);
+  const user = await userService.validateUser(email, password);
 
   // 2) prepare payload for jwt
   const payload = {
@@ -101,7 +96,7 @@ export const refresh = catchAsync(async (req: Request, res: Response) => {
 
   // 5) do rotations in the service
   const newAccessToken = generateAccessToken(payload);
-  const rotateSession = await rotateToken(oldRefreshToken, payload); // note --> rotateToken fnc will generate new refresh token and generate old token in database
+  const rotateSession = await userService.rotateToken(oldRefreshToken, payload); // note --> rotateToken fnc will generate new refresh token and generate old token in database
 
   // 6) send to the client
   res.cookie("refreshToken", rotateSession.token, REFRESH_COOKIE_OPTIONS);
@@ -117,7 +112,7 @@ export const logout = catchAsync(async (req: Request, res: Response) => {
 
   // delete token from database
   if (storedToken) {
-    await logoutUser(storedToken);
+    await userService.logoutUser(storedToken);
   }
 
   // delete token from the browser
