@@ -49,10 +49,8 @@ export const blogService = {
 
     if (search) {
       where.OR = [
-        {
-          title: { contains: search, mode: "insensitive" },
-          content: { contains: search, mode: "insensitive" },
-        },
+        { title: { contains: search, mode: "insensitive" } },
+        { content: { contains: search, mode: "insensitive" } },
       ];
     }
 
