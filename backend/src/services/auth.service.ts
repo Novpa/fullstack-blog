@@ -67,6 +67,9 @@ export const userService = {
           userId: payload.userId,
           expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         },
+        include: {
+          user: true,
+        },
       });
     });
   },

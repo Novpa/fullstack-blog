@@ -16,15 +16,16 @@ app.use(express.json());
 // cookie-parser middleware
 app.use(cookieParser());
 
-//cors middleware
-// app.use(
-//   cors({
-//     origin: "http://localhost:5173", // Sesuaikan dengan URL Frontend kamu
-//     credentials: true, // WAJIB TRUE agar cookie bisa lewat
-//     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Izinkan OPTIONS
-//     allowedHeaders: ["Content-Type", "Authorization"],
-//   }),
-// );
+// cors middleware
+app.use(
+  cors({
+    origin: "http://localhost:5173", // Sesuaikan dengan URL Frontend kamu
+    credentials: true, // WAJIB TRUE agar cookie bisa lewat
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Izinkan OPTIONS
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
+// app.use(cors());
 
 // endpoint
 app.use("/api/auth", authRouter);

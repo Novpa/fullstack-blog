@@ -9,6 +9,7 @@ import { prisma } from "../config/prisma-client.config";
 import { REFRESH_COOKIE_OPTIONS } from "../config/cookie.config";
 import { AppError } from "../utils/AppError";
 import { userService } from "../services/auth.service";
+import { formatUserResponse } from "../utils/formatUserResponse";
 
 //? signup
 export const signup = catchAsync(async (req: Request, res: Response) => {
@@ -82,8 +83,9 @@ export const refresh = catchAsync(async (req: Request, res: Response) => {
 
   if (!storedToken) {
     // delete all refresh token token that is belong to user in the DB (Security Breach)
-    await prisma.refreshToken.deleteMany({ where: { userId: decoded.userId } });
-    res.clearCookie("refreshToken", REFRESH_COOKIE_OPTIONS);
+    // await prisma.refreshToken.deleteMany({ where: { userId: decoded.userId } });
+    // console.warn("Token not found in DB - might be a race condition");
+    // res.clearCookie("refreshToken", REFRESH_COOKIE_OPTIONS);
     throw new AppError(401, "Suspicious activities are detected");
   }
 
@@ -97,13 +99,13 @@ export const refresh = catchAsync(async (req: Request, res: Response) => {
   // 5) do rotations in the service
   const newAccessToken = generateAccessToken(payload);
   const rotateSession = await userService.rotateToken(oldRefreshToken, payload); // note --> rotateToken fnc will generate new refresh token and generate old token in database
-
+  const userResponse = formatUserResponse(rotateSession.user);
   // 6) send to the client
   res.cookie("refreshToken", rotateSession.token, REFRESH_COOKIE_OPTIONS);
 
   res.status(200).json({
     status: "success",
-    data: { accessToken: newAccessToken },
+    data: { accessToken: newAccessToken, user: userResponse },
   });
 });
 

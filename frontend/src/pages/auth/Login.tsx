@@ -9,7 +9,7 @@ import { useAuthStore } from "../../store/useAuthStore";
 
 function Login() {
   const navigate = useNavigate();
-  const userLogin = useAuthStore((state) => state.setAuth);
+  const setAuth = useAuthStore((state) => state.setAuth);
 
   const formik = useFormik({
     initialValues: {
@@ -20,13 +20,16 @@ function Login() {
     validationSchema: loginSchema,
 
     onSubmit: async (values: LoginType) => {
-      const userData = await handleSubmitLogin(values);
-      const user = userData.user;
+      const { data } = await handleSubmitLogin(values);
+      const user = data.user;
+      const token = data.accessToken;
 
-      userLogin(user.id, user.email, user.role, userData.accessToken);
+      console.log("user token", user, token);
+
+      setAuth(token, user);
 
       if (user.role === "AUTHOR") {
-        navigate("/author/management");
+        navigate("/author/management", { replace: true });
       } else {
         navigate("/blog");
       }

@@ -1,10 +1,10 @@
 import { Outlet } from "react-router-dom";
-// import { useAuthStore } from "../store/useAuthStore";
-// import { useEffect } from "react";
+import Navbar from "../components/Navbar";
 
 function AppLayout() {
   return (
     <div>
+      <Navbar />
       <Outlet />
     </div>
   );

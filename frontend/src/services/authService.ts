@@ -1,18 +1,15 @@
 import axios from "axios";
 import type { LoginType } from "../types/loginTypes";
-import type { User } from "../types/userTypes";
+// import type { User } from "../types/userTypes";
 
-interface LoginResponse {
-  accessToken: string;
-  user: User;
-}
+// interface LoginResponse {
+//   accessToken: string;
+//   user: User;
+// }
 
-export const handleSubmitLogin = async ({
-  email,
-  password,
-}: LoginType): Promise<LoginResponse> => {
+export const handleSubmitLogin = async ({ email, password }: LoginType) => {
   try {
-    const response = await axios.post(
+    const { data } = await axios.post(
       "http://localhost:8000/api/auth/login",
       {
         email,
@@ -25,8 +22,7 @@ export const handleSubmitLogin = async ({
         withCredentials: true,
       },
     );
-    const data: LoginResponse = response.data.data;
-    // console.log("data", data);
+    console.log("data-login", data);
 
     return data;
   } catch (error) {

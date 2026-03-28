@@ -1,65 +1,112 @@
 import axios from "axios";
 import { useAuthStore } from "../store/useAuthStore";
 
-export const axiosInstance = axios.create({
+export const api = axios.create({
   baseURL: "http://localhost:8000/api",
   withCredentials: true,
 });
 
-// Request interceptor (before sending the request)
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = useAuthStore.getState().token; // take the token
+// src/api/axiosInstance.ts
 
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+// let isRefreshing = false; // Flag untuk menandai apakah sedang ada proses refresh
+// let failedQueue: any[] = []; // Antrean request yang gagal saat token expired
 
-    return config;
-  },
+// const processQueue = (error: any, token: string | null = null) => {
+//   failedQueue.forEach((prom) => {
+//     if (error) {
+//       prom.reject(error);
+//     } else {
+//       prom.resolve(token);
+//     }
+//   });
+//   failedQueue = [];
+// };
 
-  (error) => Promise.reject(error),
-);
+// api.interceptors.response.use(
+//   (response) => response,
+//   async (error) => {
+//     const originalRequest = error.config;
 
-// Response interceptor (after receiving the response)
-axiosInstance.interceptors.response.use(
-  (response) => response, // if the response success (200 - 299), just return response (let it go!)
+//     if (error.response?.status === 401 && !originalRequest._retry) {
+//       // Jika sudah ada yang sedang refresh, masukkan request ini ke antrean
+//       if (isRefreshing) {
+//         return new Promise((resolve, reject) => {
+//           failedQueue.push({ resolve, reject });
+//         })
+//           .then((token) => {
+//             originalRequest.headers.Authorization = `Bearer ${token}`;
+//             return api(originalRequest);
+//           })
+//           .catch((err) => Promise.reject(err));
+//       }
+
+//       originalRequest._retry = true;
+//       isRefreshing = true; // Tandai bahwa proses refresh dimulai
+
+//       return new Promise((resolve, reject) => {
+//         api
+//           .get("/auth/refresh")
+//           .then(({ data }) => {
+//             const { accessToken, user } = data.data;
+//             useAuthStore.getState().setAuth(accessToken, user);
+
+//             // Lanjutkan request asli yang tadi gagal
+//             originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+
+//             // Jalankan semua antrean yang tadi menunggu
+//             processQueue(null, accessToken);
+
+//             resolve(api(originalRequest));
+//           })
+//           .catch((err) => {
+//             processQueue(err, null);
+//             useAuthStore.getState().clearAuth();
+//             reject(err);
+//           })
+//           .finally(() => {
+//             isRefreshing = false; // Buka kunci setelah semua selesai
+//           });
+//       });
+//     }
+
+//     return Promise.reject(error);
+//   },
+// );
+
+// REQUEST INTERCEPTORS - add access token in every api request
+api.interceptors.request.use((config) => {
+  const token = useAuthStore.getState().accessToken;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+api.interceptors.response.use(
+  (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    if (
-      error.response.status === 401 &&
-      !originalRequest._retry &&
-      !originalRequest.url?.includes("/auth/refresh")
-    ) {
+    if (error.response.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
-        // 1) call api refresh to backend
-        // Browser otomatis kirim refresh token di cookie karena withCredentials: true
+        const { data } = await axios.get(
+          "http://localhost:8000/api/auth/refresh",
+          { withCredentials: true },
+        );
 
-        const res = await axios.get("http://localhost:8000/api/auth/refresh", {
-          withCredentials: true,
-        });
-        const { user, accessToken } = res.data.data;
+        console.log("data interceptors", data);
 
-        // const newAccessToken = res.data.data.accessToken;
+        const accessToken = data.data.accessToken;
 
-        // 2) update access token di zustand
-        useAuthStore
-          .getState()
-          .setAuth(user.userId, user.email, user.role, accessToken);
+        useAuthStore.getState().setAuth(accessToken, data.data.user);
 
-        // 3) update Header di request yang tadi gagal
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-
-        // ulangi request yang tadi gagal
-        return axiosInstance(originalRequest);
+        return api(originalRequest);
       } catch (refreshError) {
-        // jika refresh token juga expired atau gagal
         useAuthStore.getState().clearAuth();
         // window.location.href = "/login";
-
         return Promise.reject(refreshError);
       }
     }
@@ -68,4 +115,4 @@ axiosInstance.interceptors.response.use(
   },
 );
 
-export default axiosInstance;
+export default api;

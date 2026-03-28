@@ -7,14 +7,17 @@ interface PrivateRouteProps {
 }
 
 function PrivateRoute({ allowedRoles, children }: PrivateRouteProps) {
-  const userRole = useAuthStore((state) => state.role);
-  // const accessToken = useAuthStore((state) => state.token);
+  const user = useAuthStore((state) => state.user);
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const isInitializing = useAuthStore((state) => state.isInitializing);
 
-  // if (!accessToken) {
-  //   return <Navigate to={"/login"} replace={true} />;
-  // }
+  if (isInitializing) return <p>Loading...</p>;
 
-  if (!allowedRoles.includes((userRole as string) || "")) {
+  if (!accessToken || !user) {
+    return <Navigate to={"/login"} replace={true} />;
+  }
+
+  if (!allowedRoles.includes(user.role)) {
     return <Navigate to={"/unauthorized"} replace={true} />;
   }
 
