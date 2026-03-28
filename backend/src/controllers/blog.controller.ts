@@ -26,6 +26,31 @@ export const blogController = {
       },
     });
   }),
+
+  getAllBlog: catchAsync(async (req: Request, res: Response) => {
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+    const search = req.query.search as string;
+
+    const result = await blogService.getAllBlog({
+      page,
+      limit,
+      search,
+    });
+
+    const blogs = result?.blogs;
+    const totalPage = result?.totalPage;
+    const totalData = result?.totalData;
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        blogs,
+        totalPage,
+        totalData,
+      },
+    });
+  }),
 };
 
 // export const blogController = {

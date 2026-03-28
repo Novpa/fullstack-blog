@@ -4,6 +4,7 @@ import { blogController } from "../controllers/blog.controller";
 
 const router = Router();
 
+router.get("/", blogController.getAllBlog);
 router.post(
   "/",
   authentication,

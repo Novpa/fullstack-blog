@@ -1,10 +1,10 @@
 import slugify from "slugify";
 import { prisma } from "../config/prisma-client.config";
 import { createBlogPayload } from "../dto/blog.dto";
-import { Prisma } from "../generated/prisma/client";
 import type { GetAllBlogParameter, UpdateBlog } from "../types/blog.types";
 import { AppError } from "../utils/AppError";
 import { handlePrismaError } from "../utils/prismaErrorHandler";
+import { Prisma } from "../generated/prisma/client";
 
 export const blogService = {
   //? CREATE BLOG
@@ -35,6 +35,45 @@ export const blogService = {
       });
 
       return newBlog;
+    } catch (error) {
+      handlePrismaError(error);
+    }
+  },
+
+  getAllBlog: async ({ page, limit, search }: GetAllBlogParameter) => {
+    const offset = (page - 1) * limit;
+
+    const where: Prisma.BlogWhereInput = {
+      deletedAt: null,
+    };
+
+    if (search) {
+      where.OR = [
+        {
+          title: { contains: search, mode: "insensitive" },
+          content: { contains: search, mode: "insensitive" },
+        },
+      ];
+    }
+
+    try {
+      const [blogs, count] = await prisma.$transaction([
+        prisma.blog.findMany({
+          skip: offset,
+          take: limit,
+          where,
+          include: {
+            author: {
+              select: { firstName: true, lastName: true },
+            },
+          },
+        }),
+        prisma.blog.count({ where }),
+      ]);
+
+      const totalPage = Math.ceil(count / limit);
+
+      return { blogs, totalData: count, totalPage };
     } catch (error) {
       handlePrismaError(error);
     }
