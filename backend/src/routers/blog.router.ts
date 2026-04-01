@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { authentication, authorization } from "../middlewares/auth.middleware";
 import { blogController } from "../controllers/blog.controller";
+import { upload } from "../config/multer.config";
+import { uploadController } from "../controllers/upload.controller";
 
 const router = Router();
 
@@ -11,6 +13,12 @@ router.post(
   authentication,
   authorization("AUTHOR"),
   blogController.createBlog,
+);
+
+router.post(
+  "/test-upload",
+  upload.single("image"),
+  uploadController.uploadSingle,
 );
 
 export default router;
