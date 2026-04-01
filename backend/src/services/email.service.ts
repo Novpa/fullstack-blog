@@ -6,7 +6,7 @@ export const emailService = {
     const template = otpEmailTemplate(otp, fullName);
 
     await transporter.sendMail({
-      from: `Loggy <${process.env.EMAIL_FROM}>`,
+      from: `Ibentix <${process.env.EMAIL_FROM}>`,
       to: email,
       subject: template.subject,
       html: template.html,
