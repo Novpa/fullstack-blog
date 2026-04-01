@@ -5,6 +5,7 @@ import blogRouter from "./routers/blog.router";
 import { globalErrorHandler } from "./middlewares/errorMiddleware";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import { verifyEmailConnection } from "./config/nodemailer.config";
 
 const app: Express = express();
 
@@ -33,6 +34,8 @@ app.use("/api/blog", blogRouter);
 
 // error middleware
 app.use(globalErrorHandler);
+
+verifyEmailConnection();
 
 app.listen(PORT, () => {
   console.log(`🦄 Server is running in port ${PORT}`);
