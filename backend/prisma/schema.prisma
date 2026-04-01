@@ -14,15 +14,18 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(uuid())
-  firstName String    @db.VarChar(30)
-  lastName  String    @db.VarChar(30)
-  email     String    @unique @db.VarChar(100)
-  role      Role      @default(AUTHOR)
-  password  String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  id           String    @id @default(uuid())
+  firstName    String    @db.VarChar(30)
+  lastName     String    @db.VarChar(30)
+  email        String    @unique @db.VarChar(100)
+  role         Role      @default(AUTHOR)
+  password     String
+  isVerified   Boolean   @default(false)
+  otp          String?
+  otpExpiresAt DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
 
   blogs         Blog[]
   refreshTokens RefreshToken[]

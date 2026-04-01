@@ -8,6 +8,7 @@ export const transporter = nodemailer.createTransport({
   },
 });
 
+// nodemailer connection testing
 export const verifyEmailConnection = async () => {
   try {
     await transporter.verify();

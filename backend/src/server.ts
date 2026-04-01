@@ -35,6 +35,7 @@ app.use("/api/blog", blogRouter);
 // error middleware
 app.use(globalErrorHandler);
 
+// nodemailer connection testing
 verifyEmailConnection();
 
 app.listen(PORT, () => {

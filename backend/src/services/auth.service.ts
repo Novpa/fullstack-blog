@@ -6,6 +6,8 @@ import { formatUserResponse } from "../utils/formatUserResponse";
 import { handlePrismaError } from "../utils/prismaErrorHandler";
 import bcrypt from "bcrypt";
 import { generateRefreshToken, TokenPayload } from "../utils/token.util";
+import { generateOtp } from "../utils/generateOtp";
+import { emailService } from "./email.service";
 
 const SALT_ROUNDS = 10;
 
@@ -15,6 +17,10 @@ export const userService = {
     try {
       const hashedPassword = await bcrypt.hash(data.password, SALT_ROUNDS);
 
+      const otp = generateOtp();
+
+      const otpExpiresAt = new Date(Date.now() + 5 * 60 * 1000); // expired 5 menit
+
       const user = await prisma.user.create({
         data: {
           firstName: data.firstName,
@@ -22,8 +28,19 @@ export const userService = {
           email: data.email,
           role: data.role,
           password: hashedPassword,
+          otp,
+          otpExpiresAt,
+          isVerified: false,
         },
       });
+
+      // send otp to user's email
+      await emailService.sendOtp(
+        data.email,
+        otp,
+        `${data.firstName} ${data.lastName}`,
+      );
+
       return formatUserResponse(user);
     } catch (error) {
       handlePrismaError(error);
