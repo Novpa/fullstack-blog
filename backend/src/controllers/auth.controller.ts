@@ -10,6 +10,7 @@ import { REFRESH_COOKIE_OPTIONS } from "../config/cookie.config";
 import { AppError } from "../utils/AppError";
 import { userService } from "../services/auth.service";
 import { formatUserResponse } from "../utils/formatUserResponse";
+import { emailService } from "../services/email.service";
 
 //? signup
 export const signup = catchAsync(async (req: Request, res: Response) => {
@@ -21,6 +22,18 @@ export const signup = catchAsync(async (req: Request, res: Response) => {
     data: user,
   });
 });
+
+//? verifyOtp
+export const verifyOtp = async (req: Request, res: Response) => {
+  const { email, otp } = req.body;
+
+  await emailService.verifyOtp(email, otp);
+
+  res.status(200).json({
+    status: "success",
+    message: "Email verified successfully, you can now login",
+  });
+};
 
 //? signin
 export const login = catchAsync(async (req: Request, res: Response) => {
