@@ -1,6 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import { catchAsync } from "../utils/catchAsync";
 import { blogService } from "../services/blog.service";
+import { getAllBlogs } from "../schemas/blog.schema";
+import { endOfDay } from "date-fns";
 
 export const blogController = {
   //? create blog
@@ -27,30 +29,36 @@ export const blogController = {
     });
   }),
 
-  getAllBlog: catchAsync(async (req: Request, res: Response) => {
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 10;
-    const search = req.query.search as string;
+  getAllBlog: catchAsync(
+    async (req: Request<{}, {}, {}, getAllBlogs>, res: Response) => {
+      const page = Number(req.query.page) || 1;
+      const limit = Number(req.query.limit) || 10;
+      const search = req.query.search as string;
+      const createdAt = req.query.createdAt
+        ? endOfDay(req.query.createdAt)
+        : undefined;
 
-    const result = await blogService.getAllBlog({
-      page,
-      limit,
-      search,
-    });
+      const result = await blogService.getAllBlog({
+        page,
+        limit,
+        search,
+        createdAt,
+      });
 
-    const blogs = result?.blogs;
-    const totalPage = result?.totalPage;
-    const totalData = result?.totalData;
+      const blogs = result?.blogs;
+      const totalPage = result?.totalPage;
+      const totalData = result?.totalData;
 
-    res.status(200).json({
-      status: "success",
-      data: {
-        blogs,
-        totalPage,
-        totalData,
-      },
-    });
-  }),
+      res.status(200).json({
+        status: "success",
+        data: {
+          blogs,
+          totalPage,
+          totalData,
+        },
+      });
+    },
+  ),
 };
 
 // export const blogController = {

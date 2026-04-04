@@ -3,10 +3,12 @@ import { authentication, authorization } from "../middlewares/auth.middleware";
 import { blogController } from "../controllers/blog.controller";
 import { upload } from "../config/multer.config";
 import { uploadController } from "../controllers/upload.controller";
+import { validate } from "../middlewares/validation.middleware";
+import { getAllBlogs } from "../schemas/blog.schema";
 
 const router = Router();
 
-router.get("/", blogController.getAllBlog);
+router.get("/", validate(getAllBlogs), blogController.getAllBlog);
 
 router.post(
   "/",

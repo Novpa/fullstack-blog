@@ -5,6 +5,7 @@ import type { GetAllBlogParameter, UpdateBlog } from "../types/blog.types";
 import { AppError } from "../utils/AppError";
 import { handlePrismaError } from "../utils/prismaErrorHandler";
 import { Prisma } from "../generated/prisma/client";
+import { endOfDay, startOfDay } from "date-fns";
 
 export const blogService = {
   //? CREATE BLOG
@@ -40,7 +41,12 @@ export const blogService = {
     }
   },
 
-  getAllBlog: async ({ page, limit, search }: GetAllBlogParameter) => {
+  getAllBlog: async ({
+    page,
+    limit,
+    search,
+    createdAt,
+  }: GetAllBlogParameter) => {
     const offset = (page - 1) * limit;
 
     const where: Prisma.BlogWhereInput = {
@@ -52,6 +58,13 @@ export const blogService = {
         { title: { contains: search, mode: "insensitive" } },
         { content: { contains: search, mode: "insensitive" } },
       ];
+    }
+
+    if (createdAt) {
+      where.createdAt = {
+        lte: endOfDay(createdAt),
+        gte: startOfDay(createdAt),
+      };
     }
 
     const [blogs, count] = await prisma.$transaction([

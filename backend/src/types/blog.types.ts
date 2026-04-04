@@ -14,4 +14,5 @@ export interface GetAllBlogParameter {
   page: number;
   limit: number;
   search?: string;
+  createdAt?: Date;
 }

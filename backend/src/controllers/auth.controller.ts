@@ -11,17 +11,20 @@ import { AppError } from "../utils/AppError";
 import { userService } from "../services/auth.service";
 import { formatUserResponse } from "../utils/formatUserResponse";
 import { emailService } from "../services/email.service";
+import { signupBody } from "../schemas/auth.schema";
 
 //? signup
-export const signup = catchAsync(async (req: Request, res: Response) => {
-  const user = await userService.registerUser(req.body);
+export const signup = catchAsync(
+  async (req: Request<{}, {}, signupBody>, res: Response) => {
+    const user = await userService.registerUser(req.body);
 
-  res.status(201).json({
-    status: "success",
-    message: "User is successfully created",
-    data: user,
-  });
-});
+    res.status(201).json({
+      status: "success",
+      message: "User is successfully created",
+      data: user,
+    });
+  },
+);
 
 //? verifyOtp
 export const verifyOtp = async (req: Request, res: Response) => {
